@@ -12,11 +12,28 @@ public class Ranger extends Combatant implements CharacterSetUp {
 		setSaves();
 		setAc();
 		setAttacks();
-		setAddedDamage(getDex());
 		setHitDie(10);
-		setToHit(getStr() + getProficiancy());
-		// TODO Auto-generated constructor stub
+		critRange();
+		setAddedDamageAndToHit();
 		setCurHp(getCharacter().getHitPoints() + (getCon() * getLevel()));
+	}
+	
+	private void setAddedDamageAndToHit(){
+		if(getLevel() < 8) {
+			setToHit(getDex() + getProficiancy());
+			setAddedDamage(getDex() + 2);
+		}else {
+			setToHit(getDex() + getProficiancy() - 5);
+			setAddedDamage(getDex() + 12);
+		}
+	}
+
+	private void critRange() {
+		if (getLevel() > 2) {
+			setCritRange(19);
+		} else if (getLevel() > 14) {
+			setCritRange(18);
+		}
 	}
 
 	private void setAttacks() {
@@ -24,45 +41,52 @@ public class Ranger extends Combatant implements CharacterSetUp {
 			setAttacks(1);
 		} else if (getLevel() < 17) {
 			setAttacks(2);
-		} else {
+		} else if (getLevel() < 20) {
 			setAttacks(3);
+		} else {
+			setAttacks(4);
 		}
 	}
-	
+
 	@Override
 	public void setDEX() {
-		// TODO Auto-generated method stub
-		
+		if (getLevel() < 4) {
+			setDex(3);
+		} else if (getLevel() < 6) {
+			setDex(4);
+		} else {
+			setDex(5);
+		}
 	}
 
 	@Override
 	public void setCON() {
-		// TODO Auto-generated method stub
-		
+		setCon(16);
 	}
 
 	@Override
 	public void setSTR() {
-		// TODO Auto-generated method stub
-		
+		setStr(0);
 	}
 
 	@Override
 	public void setAc() {
-		// TODO Auto-generated method stub
-		
+		if (getLevel() < 10) {
+			setAC(getDex() +  13);
+		} else {
+			setAC(getDex() +  14);
+		}
 	}
 
 	@Override
 	public void setSaves() {
-		// TODO Auto-generated method stub
-		
+		setWisSave(true);
+		setDexSave(true);
 	}
 
 	@Override
 	public Integer round(Combatant combatant) {
-		// TODO Auto-generated method stub
-		return null;
+		return combatRound(combatant, 1, 8);
 	}
 
 }

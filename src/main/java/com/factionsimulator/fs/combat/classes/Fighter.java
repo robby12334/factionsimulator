@@ -14,8 +14,17 @@ public class Fighter extends Combatant implements CharacterSetUp {
 		setAttacks();
 		addAddedDamage(getStr());
 		setHitDie(10);
+		critRange();
 		setToHit(getStr() + getProficiancy());
 		setCurHp(getCharacter().getHitPoints() + (getCon() * getLevel()));
+	}
+
+	private void critRange() {
+		if (getLevel() > 2) {
+			setCritRange(19);
+		} else if (getLevel() > 14) {
+			setCritRange(18);
+		}
 	}
 
 	private void addAddedDamage(Integer str) {
@@ -31,11 +40,11 @@ public class Fighter extends Combatant implements CharacterSetUp {
 	}
 
 	private void setAttacks() {
-		if (getLevel() < 4) {
+		if (getLevel() < 5) {
 			setAttacks(1);
-		} else if (getLevel() < 11) {
+		} else if (getLevel() < 17) {
 			setAttacks(2);
-		} else if (getLevel() < 20) {
+		} else if (getLevel() < 20){
 			setAttacks(3);
 		} else {
 			setAttacks(4);

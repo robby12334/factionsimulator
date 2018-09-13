@@ -1,10 +1,11 @@
 package com.factionsimulator.fs.combat.classes;
 
 public interface CharacterSetUp {
-	public void setDex();
-	public void setCon();
-	public void setStr();
+	public void setDEX();
+	public void setCON();
+	public void setSTR();
 	public void setAc();
-	public void setSaves();
+	public void setSaves();	
+	public Integer round(Combatant combatant);
 	
 }

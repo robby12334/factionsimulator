@@ -6,23 +6,29 @@ public class Rogue extends Combatant implements CharacterSetUp {
 
 	public Rogue(Character character) {
 		super(character);
-		setDex();
-		setCon();
-		setStr();
+		setDEX();
+		setCON();
+		setSTR();
 		setSaves();
 		setAc();
-		hitDie = 8;
-		toHit = dex + proficiancy;
-		addedDamage = dex;
-		attacks = 1;
+		setHitDie(8);
+		setToHit(getDex() + getProficiancy());
+		setCurHp(getCharacter().getHitPoints() + (getCon() * getLevel()));
+		setAddedDamage(getDex());
 	}
 
 	@Override
-	public Integer combatRound(Combatant combatant, Integer AC, Integer numDice, Integer diceType) {
+	public Integer attackDamage(Combatant combatant, Integer toHit, Integer diceDamage, Integer damageBonus) {
+		diceDamage += sneakAttack();
+		return super.attackDamage(combatant, toHit, diceDamage, damageBonus);
+	}
+	
+	@Override
+	public Integer combatRound(Combatant combatant, Integer numDice, Integer diceType) {
 		int total = 0;
-		if (curHp > 0) {
+		if (isAlive()) {
 			int diceDamage = roll(numDice, diceType) + sneakAttack();
-			total += attackDamage(combatant, toHit, diceDamage, addedDamage);
+			total += attackDamage(combatant, getToHit(), diceDamage, getAddedDamage());
 		}
 		return total;
 	}
@@ -35,51 +41,55 @@ public class Rogue extends Combatant implements CharacterSetUp {
 	public Integer takeDamage(Integer damage, boolean passed, String save) {
 		if (!(passed && save.equals("dex") && getLevel() >= 7)) {
 			if (getLevel() >= 7 && save.equals("dex")) {
-				this.curHp -= damage / 2;
-				return damage / 2;
+				return removeHP(damage / 2);
 			} else {
-				return damage;
+				return removeHP(damage);
 			}
 		}
 		return 0;
 	}
 
 	@Override
-	public void setDex() {
+	public void setDEX() {
 		if (getLevel() < 4) {
-			dex = 3;
+			setDex(3);
 		} else if (getLevel() < 8) {
-			dex = 4;
+			setDex(4);
 		} else {
-			dex = 5;
+			setDex(5);
 		}
 	}
 
 	@Override
-	public void setCon() {
+	public void setCON() {
 		if (getLevel() < 12) {
-			con = 0;
+			setCon(0);
 		} else if (getLevel() < 16) {
-			con = 1;
+			setCon(1);
 		} else {
-			con = 2;
+			setCon(2);
 		}
 	}
 
 	@Override
-	public void setStr() {
-		str = -1;
+	public void setSTR() {
+		setStr(-1);
 	}
 
 	@Override
 	public void setAc() {
-		AC = dex + 13;
+		setAC(getDex() + 13);
 	}
 
 	@Override
 	public void setSaves() {
-		dexSave = true;
-		chaSave = true;
+		setDexSave(true);
+		setChaSave(true);
+	}
+
+	@Override
+	public Integer round(Combatant combatant) {
+		return combatRound(combatant,1,4);
 	}
 
 }

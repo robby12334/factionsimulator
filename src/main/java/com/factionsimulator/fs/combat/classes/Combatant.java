@@ -1,40 +1,37 @@
 package com.factionsimulator.fs.combat.classes;
 
-import java.util.ArrayList;
-
 public class Combatant {
-	protected com.factionsimulator.fs.data.dao.Character character;
-	protected Integer curHp;
-	protected Integer toHit;
-	protected Integer addedDamage;
-	protected Integer proficiancy;
-	protected Integer attacks = 1;
-	protected Integer AC = 0;
-
-	protected boolean hasAdvantage = false;
-	protected boolean givesAdvantage = false;
+	private com.factionsimulator.fs.data.dao.Character character;
+	private Integer curHp = 999;
+	private Integer toHit = 0;
+	private Integer addedDamage = 0;
+	private Integer proficiancy = 0;
+	private Integer attacks = 1;
+	private Integer AC = 0;
+	private Integer critRange = 20;
+	private boolean hasAdvantage = false;
+	private boolean givesAdvantage = false;
 
 	// Dice
-	protected Integer hitDie;
+	private Integer hitDie = 6;
 
 	// Saves
-	protected Integer str = 0;
-	protected boolean strSave = false;
-	protected Integer dex = 0;
-	protected boolean dexSave = false;
-	protected Integer con = 0;
-	protected boolean conSave = false;
-	protected Integer wis = 2;
-	protected boolean wisSave = false;
-	protected Integer intel = 0;
-	protected boolean intSave = false;
-	protected Integer cha = 2;
-	protected boolean chaSave = false;
+	private Integer str = 0;
+	private boolean strSave = false;
+	private Integer dex = 0;
+	private boolean dexSave = false;
+	private Integer con = 0;
+	private boolean conSave = false;
+	private Integer wis = 2;
+	private boolean wisSave = false;
+	private Integer intel = 0;
+	private boolean intSave = false;
+	private Integer cha = 2;
+	private boolean chaSave = false;
 
 	public Combatant(com.factionsimulator.fs.data.dao.Character character) {
 		this.character = character;
 		setProficiancy();
-		curHp = character.getHitPoints();
 	}
 
 	public Integer getLevel() {
@@ -47,6 +44,10 @@ public class Combatant {
 
 	public void setCurHp(Integer curHp) {
 		this.curHp = curHp;
+	}
+
+	public boolean isAlive() {
+		return this.curHp > 0;
 	}
 
 	public void setProficiancy() {
@@ -115,15 +116,15 @@ public class Combatant {
 	}
 
 	protected boolean isHit(Integer dice, Integer toHit) {
-		if ((dice + toHit >= AC) || dice == 20) {
+		if ((dice + toHit >= AC) || dice >= critRange) {
 			return true;
 		}
 		return false;
 	}
 
-	public Integer combatRound(Combatant combatant, Integer AC, Integer numDice, Integer diceType) {
+	public Integer combatRound(Combatant combatant, Integer numDice, Integer diceType) {
 		int total = 0;
-		if (curHp > 0) {
+		if (isAlive()) {
 			for (int i = 0; i < attacks; i++) {
 				total += attackDamage(combatant, toHit, roll(numDice, diceType), addedDamage);
 			}
@@ -131,22 +132,31 @@ public class Combatant {
 		return total;
 	}
 
+	public int removeHP(Integer damage) {
+		curHp -= damage;
+		return damage;
+	}
+
 	protected Integer takeDamage(Integer damage, boolean passed, String save) {
 		if (passed) {
-			this.curHp -= damage / 2;
-			return damage / 2;
+			return removeHP(damage / 2);
 		} else {
-			this.curHp -= damage;
-			return damage;
+			return removeHP(damage);
 		}
 	}
 
 	protected Integer damage(Combatant combatant, Integer damage) {
-		return combatant.takeDamage(damage, false, "");
+		int dmg = combatant.takeDamage(damage, false, "");
+		System.out
+				.println(character.getFirstName() + " Dealt " + dmg + " To " + combatant.getCharacter().getFirstName());
+		return dmg;
 	}
 
 	public Integer saveDamage(Combatant combatant, Integer damage, boolean passed, String save) {
-		return combatant.takeDamage(damage, passed, save);
+		int dmg = combatant.takeDamage(damage, passed, save);
+		System.out
+				.println(character.getFirstName() + " Dealt " + dmg + " To " + combatant.getCharacter().getFirstName());
+		return dmg;
 	}
 
 	public Integer saveDamage(Combatant combatant, Integer damage, Integer DC, String save) {
@@ -175,32 +185,219 @@ public class Combatant {
 	}
 
 	public Integer attackDamage(Combatant combatant, Integer toHit, Integer diceDamage, Integer damageBonus) {
-		int die = combatant.givesAdvantage ? advantage() : attack();
+		int die = combatant.getGivesAdvantage() || getHasAdvantage() ? advantage() : attack();
 		int total = 0;
-		if ((die + toHit >= combatant.AC) || die == 20) {
-			total += damage(combatant, (die == 20 ? diceDamage * 2 : diceDamage) + damageBonus);
+		if ((die + toHit >= combatant.getAC()) || die >= critRange) {
+			total += damage(combatant, (die >= critRange ? diceDamage * 2 : diceDamage) + damageBonus);
+		} else {
+			System.out.println(character.getFirstName() + " Missed " + combatant.getCharacter().getFirstName());
 		}
 		return total;
 	}
 
-	public Integer round(Integer AC) {
-		return null;
-	}
-
 	public static void main(String[] args) {
 		com.factionsimulator.fs.data.dao.Character character = new com.factionsimulator.fs.data.dao.Character();
-		character.setClassLevel(20);
+		character.setClassLevel(10);
 		character.setClassName("ROGUE");
-		character.setHitPoints(1);
+		character.setHitPoints(93);
+		character.setFirstName("Rogue");
 		Rogue rogue = new Rogue(character);
+		character = new com.factionsimulator.fs.data.dao.Character();
+		character.setClassLevel(10);
+		character.setClassName("BARBARIAN");
+		character.setFirstName("Barbarian");
+		character.setHitPoints(93);
+		Barbarian barb = new Barbarian(character);
 
-		ArrayList<Combatant> comb = new ArrayList<Combatant>();
-		comb.add(rogue);
+		while (barb.isAlive() && rogue.isAlive()) {
+			int rand = (int) (Math.random() * 100);
 
-		for (int i = 0; i < 100; i++) {
-			System.out.println(rogue.round(10));
+			if (rand % 2 == 0) {
+				barb.combatRound(rogue, 1, 12);
+				rogue.round(barb);
+
+			} else {
+				rogue.round(barb);
+				barb.combatRound(rogue, 1, 12);
+			}
+
 		}
+	}
 
+	public Integer getToHit() {
+		return toHit;
+	}
+
+	public void setToHit(Integer toHit) {
+		this.toHit = toHit;
+	}
+
+	public Integer getAddedDamage() {
+		return addedDamage;
+	}
+
+	public void setAddedDamage(Integer addedDamage) {
+		this.addedDamage = addedDamage;
+	}
+
+	public Integer getProficiancy() {
+		return proficiancy;
+	}
+
+	public void setProficiancy(Integer proficiancy) {
+		this.proficiancy = proficiancy;
+	}
+
+	public Integer getAttacks() {
+		return attacks;
+	}
+
+	public void setAttacks(Integer attacks) {
+		this.attacks = attacks;
+	}
+
+	public Integer getAC() {
+		return AC;
+	}
+
+	public void setAC(Integer aC) {
+		AC = aC;
+	}
+
+	public Integer getCritRange() {
+		return critRange;
+	}
+
+	public void setCritRange(Integer critRange) {
+		this.critRange = critRange;
+	}
+
+	public boolean getHasAdvantage() {
+		return hasAdvantage;
+	}
+
+	public void setHasAdvantage(boolean hasAdvantage) {
+		this.hasAdvantage = hasAdvantage;
+	}
+
+	public boolean getGivesAdvantage() {
+		return givesAdvantage;
+	}
+
+	public void setGivesAdvantage(boolean givesAdvantage) {
+		this.givesAdvantage = givesAdvantage;
+	}
+
+	public Integer getHitDie() {
+		return hitDie;
+	}
+
+	public void setHitDie(Integer hitDie) {
+		this.hitDie = hitDie;
+	}
+
+	public Integer getStr() {
+		return str;
+	}
+
+	public void setStr(Integer str) {
+		this.str = str;
+	}
+
+	public boolean isStrSave() {
+		return strSave;
+	}
+
+	public void setStrSave(boolean strSave) {
+		this.strSave = strSave;
+	}
+
+	public Integer getDex() {
+		return dex;
+	}
+
+	public void setDex(Integer dex) {
+		this.dex = dex;
+	}
+
+	public boolean isDexSave() {
+		return dexSave;
+	}
+
+	public void setDexSave(boolean dexSave) {
+		this.dexSave = dexSave;
+	}
+
+	public Integer getCon() {
+		return con;
+	}
+
+	public void setCon(Integer con) {
+		this.con = con;
+	}
+
+	public boolean isConSave() {
+		return conSave;
+	}
+
+	public void setConSave(boolean conSave) {
+		this.conSave = conSave;
+	}
+
+	public Integer getWis() {
+		return wis;
+	}
+
+	public void setWis(Integer wis) {
+		this.wis = wis;
+	}
+
+	public boolean isWisSave() {
+		return wisSave;
+	}
+
+	public void setWisSave(boolean wisSave) {
+		this.wisSave = wisSave;
+	}
+
+	public Integer getIntel() {
+		return intel;
+	}
+
+	public void setIntel(Integer intel) {
+		this.intel = intel;
+	}
+
+	public boolean isIntSave() {
+		return intSave;
+	}
+
+	public void setIntSave(boolean intSave) {
+		this.intSave = intSave;
+	}
+
+	public Integer getCha() {
+		return cha;
+	}
+
+	public void setCha(Integer cha) {
+		this.cha = cha;
+	}
+
+	public boolean isChaSave() {
+		return chaSave;
+	}
+
+	public void setChaSave(boolean chaSave) {
+		this.chaSave = chaSave;
+	}
+
+	public Integer getCurHp() {
+		return curHp;
+	}
+
+	public void setCharacter(com.factionsimulator.fs.data.dao.Character character) {
+		this.character = character;
 	}
 
 }

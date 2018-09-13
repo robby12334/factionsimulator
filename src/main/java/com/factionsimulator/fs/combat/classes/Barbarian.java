@@ -6,88 +6,101 @@ public class Barbarian extends Combatant implements CharacterSetUp {
 
 	public Barbarian(Character character) {
 		super(character);
-		setDex();
-		setCon();
-		setStr();
+		setDEX();
+		setCON();
+		setSTR();
 		setSaves();
 		setAc();
 		setAttacks();
-		addAddedDamage(str);
-		hitDie = 12;
-		toHit = str + proficiancy;
-
+		addAddedDamage(getStr());
+		setHitDie(12);
+		setToHit(getStr() + getProficiancy());
+		setCurHp(getCharacter().getHitPoints() + (getCon() * getLevel()));
 		if (getLevel() > 2) {
-			hasAdvantage = true;
-			givesAdvantage = true;
+			setHasAdvantage(true);
+			setGivesAdvantage(true);
 		}
 
 	}
 
 	private void setAttacks() {
 		if (getLevel() < 5) {
-			attacks = 1;
+			setAttacks(1);
 		} else if (getLevel() < 17) {
-			attacks = 2;
-		} else {
-			attacks = 3;
+			setAttacks(2);
+		} else if (getLevel() == 20){
+			setAttacks(3);
 		}
 	}
 
 	private void addAddedDamage(Integer str) {
-		toHit += str;
+		int rageBonus = 0;
 		if (getLevel() < 9) {
-			toHit += 2;
+			rageBonus += 2;
 		} else if (getLevel() < 16) {
-			toHit += 3;
+			rageBonus += 3;
 		} else {
-			toHit += 4;
+			rageBonus += 4;
 		}
-
+		setAddedDamage(str + rageBonus);
 	}
 
 	@Override
-	public void setDex() {
+	public void setDEX() {
 		if (getLevel() < 19) {
-			dex = 2;
+			setDex(2);
 		} else {
-			dex = 3;
+			setDex(3);
 		}
 	}
 
 	@Override
-	public void setCon() {
+	public void setCON() {
 		if (getLevel() < 12) {
-			con = 3;
+			setCon(3);
 		} else if (getLevel() < 16) {
-			con = 4;
+			setCon(4);
 		} else {
-			con = 5;
+			setCon(5);
 		}
 	}
 
 	@Override
-	public void setStr() {
+	public void setSTR() {
 		if (getLevel() < 4) {
-			str = 3;
+			setStr(3);
 		} else if (getLevel() < 8) {
-			str = 4;
+			setStr(4);
 		} else {
-			str = 5;
+			setStr(5);
 		}
 	}
 
 	@Override
 	public void setAc() {
-		AC = 10 + dex + con;
+		setAC(10 + getDex() + getCon());
 	}
 
 	@Override
 	public void setSaves() {
-		strSave = true;
-		conSave = true;
+		setStrSave(true);
+		setConSave(true);
 		if (getLevel() > 2) {
-			dexSave = true;
+			setDexSave(true);
 		}
 	}
+	
+	@Override
+	protected Integer takeDamage(Integer damage, boolean passed, String save) {
+		damage = damage / 2;
+		return super.takeDamage(damage, passed, save);
+	}
+	
+	@Override
+	public Integer round(Combatant combatant) {
+		return combatRound(combatant,1,12);
+	}
+
+
 
 }

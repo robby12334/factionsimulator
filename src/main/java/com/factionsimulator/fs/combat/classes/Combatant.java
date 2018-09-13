@@ -184,10 +184,16 @@ public class Combatant {
 		return saveDamage(combatant, damage, passed, save);
 	}
 
+	public boolean doesItHit(Integer die, Integer toHit, Integer critRange) {
+		if ((die + toHit >= getAC()) || die >= critRange)
+			return true;
+		return false;
+	}
+	
 	public Integer attackDamage(Combatant combatant, Integer toHit, Integer diceDamage, Integer damageBonus) {
 		int die = combatant.getGivesAdvantage() || getHasAdvantage() ? advantage() : attack();
 		int total = 0;
-		if ((die + toHit >= combatant.getAC()) || die >= critRange) {
+		if (combatant.doesItHit(die, toHit, critRange)) {
 			total += damage(combatant, (die >= critRange ? diceDamage * 2 : diceDamage) + damageBonus);
 		} else {
 			System.out.println(character.getFirstName() + " Missed " + combatant.getCharacter().getFirstName());

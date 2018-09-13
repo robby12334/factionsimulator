@@ -1,5 +1,7 @@
 package com.factionsimulator.fs.combat.classes;
 
+import java.util.ArrayList;
+
 import com.factionsimulator.fs.data.dao.Character;
 
 public class SpellCaster extends Combatant {
@@ -13,21 +15,23 @@ public class SpellCaster extends Combatant {
 	private Integer spellSeven = 0;
 	private Integer spellEight = 0;
 	private Integer spellNine = 0;
+	private ArrayList<Integer> spellList;
 
 	public SpellCaster(Character character) {
 		super(character);
 		setUpSpellSlots();
+		setUpSpellList();
 	}
 
 	private void setUpSpellSlots() {
 		switch (getLevel()) {
 		case 1:
-			spellOne+=2;
+			spellOne += 2;
 		case 2:
 			spellOne++;
 		case 3:
 			spellOne++;
-			spellTwo+=2;
+			spellTwo += 2;
 		case 4:
 			spellTwo++;
 		case 5:
@@ -64,8 +68,37 @@ public class SpellCaster extends Combatant {
 		}
 	}
 
-	public Integer getSpellOne() {
-		return spellOne;
+	private void setUpSpellList() {
+		spellList = new ArrayList<Integer>();
+		spellList.add(spellOne);
+		spellList.add(spellTwo);
+		spellList.add(spellThree);
+		spellList.add(spellFour);
+		spellList.add(spellFive);
+		spellList.add(spellSix);
+		spellList.add(spellSeven);
+		spellList.add(spellEight);
+		spellList.add(spellNine);
+	}
+
+	public Integer getNextSpellHighToLow() {
+		for (int spellLevel = 9; spellLevel > 0; spellLevel--) {
+			if (spellList.get(spellLevel - 1) > 0) {
+				spellList.set(spellLevel - 1, spellList.get(spellLevel - 1) - 1);
+				return spellLevel + 1;
+			}
+		}
+		return 1;
+	}
+
+	public Integer getNextSpellLowToHigh() {
+		for (int spellLevel = 1; spellLevel > 3; spellLevel++) {
+			if (spellList.get(spellLevel - 1) > 0) {
+				spellList.set(spellLevel - 1, spellList.get(spellLevel - 1) - 1);
+				return spellLevel + 1;
+			}
+		}
+		return 0;
 	}
 
 	public void setSpellOne(Integer spellOne) {

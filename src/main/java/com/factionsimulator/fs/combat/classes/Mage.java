@@ -9,48 +9,73 @@ public class Mage extends SpellCaster implements CharacterSetUp {
 		setDEX();
 		setCON();
 		setSTR();
+		setINT();
 		setSaves();
 		setAc();
 		setHitDie(6);
 		setToHit(getStr() + getProficiancy());
-		// TODO Auto-generated constructor stub
 		setCurHp(getCharacter().getHitPoints() + (getCon() * getLevel()));
 	}
 
 	@Override
+	public boolean doesItHit(Integer die, Integer toHit, Integer critRange) {
+		if (die >= critRange) {
+			return true;
+		} else if (die + toHit <= super.getAC()) {
+			return false;
+		} else {
+			if(die + toHit - 5 <= super.getAC() && super.getNextSpellLowToHigh() > 0) {
+				
+			}
+		}
+		return false;
+	}
+
+	private void setINT() {
+		if (getLevel() < 4) {
+			setIntel(3);
+		} else if (getLevel() < 8) {
+			setIntel(4);
+		} else {
+			setIntel(5);
+		}
+	}
+
+	@Override
 	public void setDEX() {
-		// TODO Auto-generated method stub
-		
+		if (getLevel() < 12) {
+			setDex(3);
+		} else if (getLevel() < 16) {
+			setDex(4);
+		} else {
+			setDex(5);
+		}
 	}
 
 	@Override
 	public void setCON() {
-		// TODO Auto-generated method stub
-		
+		super.setCon(1);
 	}
 
 	@Override
 	public void setSTR() {
-		// TODO Auto-generated method stub
-		
+		super.setStr(-1);
 	}
 
 	@Override
 	public void setAc() {
-		// TODO Auto-generated method stub
-		
+		super.setAC(getDex() + 8);
 	}
 
 	@Override
 	public void setSaves() {
-		// TODO Auto-generated method stub
-		
+		super.setWisSave(true);
+		super.setIntSave(true);
 	}
 
 	@Override
 	public Integer round(Combatant combatant) {
-		// TODO Auto-generated method stub
-		return null;
+		return super.combatRound(combatant, super.getNextSpellHighToLow(), 10);
 	}
 
 }
